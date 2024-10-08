@@ -1,12 +1,13 @@
 package com.colak.springtutorial.configuration;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,34 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorizeRequests ->
+                        authorizeRequests
+                                .requestMatchers("/public/**").permitAll()
+                                .anyRequest().authenticated()
+                )
+
+                // .exceptionHandling(exception -> {
+                //     exception.authenticationEntryPoint((request, response, authException) -> {
+                //         // If authentication fails
+                //         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Custom Unauthorized message");
+                //
+                //     });
+                //
+                //     exception.accessDeniedHandler((request, response, accessDeniedException) ->
+                //             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Custom Forbidden message"));
+                // })
+                .formLogin(FormLoginConfigurer::permitAll)
+                .logout(LogoutConfigurer::permitAll);
+
+        return http.build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,30 +65,5 @@ public class SecurityConfig {
                 .build();
 
         return new InMemoryUserDetailsManager(user, admin);
-    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        customizer -> customizer.requestMatchers("/api/v1/secured/**")
-                                .authenticated()
-                                .anyRequest()
-                                .permitAll())
-
-                .exceptionHandling(exception -> {
-                    exception.authenticationEntryPoint((request, response, authException) -> {
-                        // If authentication fails
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Custom Unauthorized message");
-
-                    });
-
-                    exception.accessDeniedHandler((request, response, accessDeniedException) ->
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Custom Forbidden message"));
-                })
-                .httpBasic(Customizer.withDefaults());
-
-        return http.build();
     }
 }
