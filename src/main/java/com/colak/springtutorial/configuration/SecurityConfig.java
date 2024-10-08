@@ -2,12 +2,11 @@ package com.colak.springtutorial.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,25 +26,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/public/**").permitAll()
                                 .anyRequest().authenticated()
                 )
+                .formLogin(Customizer.withDefaults());
 
-                // .exceptionHandling(exception -> {
-                //     exception.authenticationEntryPoint((request, response, authException) -> {
-                //         // If authentication fails
-                //         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Custom Unauthorized message");
-                //
-                //     });
-                //
-                //     exception.accessDeniedHandler((request, response, accessDeniedException) ->
-                //             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Custom Forbidden message"));
-                // })
-                .formLogin(FormLoginConfigurer::permitAll)
-                .logout(LogoutConfigurer::permitAll);
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
