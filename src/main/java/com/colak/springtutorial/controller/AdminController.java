@@ -35,6 +35,7 @@ public class AdminController {
         return "hello world secured!! for " + userId;
     }
 
+    // Do not delete this method. It is used by Spel in this controller
     public String getCurrentUser() {
         UserDetails currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return currentUser.getUsername();
